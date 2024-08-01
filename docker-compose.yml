@@ -1,0 +1,49 @@
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - 27017:27017
+    networks:
+      - app
+    volumes:
+      - ~/mongo/data:/data/db
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+    networks:
+      - app
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app
+    volumes:
+      - ./backend:/opt/backend
+
+  app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - app
+    volumes:
+      - ./frontend:/opt/frontend
+
+networks:
+  app:
+    driver: "bridge"
